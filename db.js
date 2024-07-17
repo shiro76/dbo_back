@@ -1,4 +1,5 @@
-const mysql = require('mysql2');
+// const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -11,8 +12,18 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-module.exports = pool.promise(); // Utiliser les promesses pour une gestion plus facile
+const db = pool;
 
+db.getConnection()
+    .then(connection => {
+        console.log('Connected to database');
+        connection.release(); // Libérer la connexion après vérification
+    })
+    .catch(err => {
+        console.error('Database connection failed:', err.stack);
+    });
+
+module.exports = db;
 
 // const mysql = require('mysql2');
 // require('dotenv').config();
@@ -21,7 +32,10 @@ module.exports = pool.promise(); // Utiliser les promesses pour une gestion plus
 //     host: process.env.DATABASE_HOST,
 //     user: process.env.DATABASE_USER,
 //     password: process.env.DATABASE_PASSWORD,
-//     database: process.env.DATABASE_NAME
+//     database: process.env.DATABASE_NAME,
+//     waitForConnections: true,
+//     connectionLimit: 10,
+//     queueLimit: 0
 // });
 
 // db.connect(err => {
